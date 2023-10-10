@@ -69,6 +69,8 @@ public class BarcodeScanner: CAPPlugin, AVCaptureMetadataOutputObjectsDelegate {
     var scanningPaused: Bool = false
     var lastScanResult: String? = nil
 
+    let serialBackgroundQueue = DispatchQueue(label: "capacitorBarcodeScannerQueue")
+
     enum SupportedFormat: String, CaseIterable {
         // 1D Product
         //!\ UPC_A is part of EAN_13 according to Apple docs
@@ -221,7 +223,7 @@ public class BarcodeScanner: CAPPlugin, AVCaptureMetadataOutputObjectsDelegate {
         // opposite of setupCamera
 
         if (self.captureSession != nil) {
-            DispatchQueue.main.async {
+            self.serialBackgroundQueue.async {
                 self.captureSession!.stopRunning()
                 self.cameraView.removePreviewLayer()
                 self.captureVideoPreviewLayer = nil
@@ -310,7 +312,7 @@ public class BarcodeScanner: CAPPlugin, AVCaptureMetadataOutputObjectsDelegate {
                 }
             }
 
-            DispatchQueue.main.async {
+            self.serialBackgroundQueue.async {
                 self.metaOutput!.metadataObjectTypes = self.targetedFormats
                 self.captureSession!.startRunning()
             }
